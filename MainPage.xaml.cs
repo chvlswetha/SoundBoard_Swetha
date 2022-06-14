@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using SoundBoard.Model;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -22,28 +24,60 @@ namespace SoundBoard
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private ObservableCollection<Sound> Sounds;
+        private List<MenuItem> MenuItems;
         public MainPage()
         {
             this.InitializeComponent();
+            Sounds = new ObservableCollection<Sound>();
+            SoundManager.GetAllSounds(Sounds);
+
+            MenuItems = new List<MenuItem>();
+
+            MenuItems.Add(new MenuItem{
+                IconFile = "Assets/Icons/animals.png",
+                category = SoundCategory.Animals });
+       
+            MenuItems.Add(new MenuItem{
+                IconFile = "Assets/Icons/cartoon.png ",
+                category = SoundCategory.Cartoons});
+
+            MenuItems.Add(new MenuItem{ 
+                IconFile = "Assets/Icons/taunt.png ",
+                category = SoundCategory.Taunts});
+    
+
+            MenuItems.Add(new MenuItem{
+                IconFile = "Assets/Icons/warning.png ",
+                category = SoundCategory.Warnings});
+
+            BackButton.Visibility = Visibility.Collapsed;
         }
         private void HamBurgerButton_Click(object sender, RoutedEventArgs e)
         {
-
+            MySplitView.IsPaneOpen = !MySplitView.IsPaneOpen;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-             
+            SoundManager.GetAllSounds(Sounds);
+            CategoryTextBlock.Text = "All Sounds";
+            BackButton.Visibility = Visibility.Collapsed;
+            MenuItemsListView.SelectedItem = null;
         }
 
         private void MenuItemsListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-
+            var menuItem = (MenuItem)e.ClickedItem;
+            CategoryTextBlock.Text = menuItem.category.ToString();
+            SoundManager.GetAllSoundsByCategory(Sounds, menuItem.category);
+            BackButton.Visibility = Visibility.Visible;
         }
 
         private void SoundGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-
+            var soundItem = (Sound)e.ClickedItem;
+            SoundMedia.Source = new Uri(this.BaseUri, soundItem.AudioFile);
         }
     }
 }
